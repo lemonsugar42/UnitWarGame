@@ -1,4 +1,7 @@
-﻿namespace gamedraft
+﻿using System.Text.Json.Serialization;
+using System.Text.Json;
+
+namespace gamedraft
 {
     public class Game
     {
@@ -989,13 +992,46 @@
         }
     }
 
+    class GetJsonFields
+    {
+        public string? TeamName { get; set; }
+        public List<Unit>? UnitDiscriptions { get; set; }
+        public List<int>? Units { get; set; }
+        public void createJsonFile(GetJsonFields jsonString)
+        {
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault
+            };
+            string json = JsonSerializer.Serialize(jsonString, options);
+            File.WriteAllText("WhyNot.json", json);
+        }
+    }
+
     internal class Program
     {
         static void Main(string[] args)
         {
             Army user = Army.CreateUserArmy();
             Army computer = Army.CreateRandomArmy();
-            new WarGame().War(user, computer);
+            Army winner = new WarGame().War(user, computer);
+
+            List<Unit> army = winner.InitialList.Select(x => (Unit)x).ToList();
+
+            List<int> id = new();
+            for (int i = 0; i < army.Count; i++)
+            {
+                id.Add(army[i].UnitDescriptionId);
+            }
+
+            var jsonFile = new GetJsonFields
+            {
+                TeamName = "WhyNot?",
+                UnitDiscriptions = army,
+                Units = id
+            };
+            jsonFile.createJsonFile(jsonFile);
         }
     }
 }
